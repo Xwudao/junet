@@ -18,7 +18,7 @@ func CmnRtn(code int, msg string, v interface{}) gin.H {
 func OkRtn(v interface{}) gin.H {
 	return CmnRtn(200, junet.SuccessRtn, v)
 }
-func errRtn(msg string, v interface{}) gin.H {
+func ErrRtn(msg string, v interface{}) gin.H {
 	return CmnRtn(0, msg, v)
 }
 func SendJson(c *gin.Context, v interface{}) {

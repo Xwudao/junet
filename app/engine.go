@@ -9,6 +9,6 @@ type Engine struct {
 }
 
 func NewEngine() *Engine {
-	e := &Engine{Engine: gin.New()}
+	e := &Engine{Engine: gin.Default()}
 	return e
 }
