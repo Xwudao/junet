@@ -10,6 +10,7 @@ import (
 	"github.com/Xwudao/junet/shutdown"
 )
 
+type H gin.H
 type InfoOpt func(*Info)
 
 func SetMode(s string) InfoOpt {
