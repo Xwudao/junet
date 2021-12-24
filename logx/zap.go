@@ -12,17 +12,28 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	rotatelogs "github.com/iproj/file-rotatelogs"
+
+	"github.com/Xwudao/junet"
 )
 
-var z = zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), os.Stdout, zap.DebugLevel))
+const (
+	JSON = "json"
+	TEXT = "text"
+)
+
+//type JLogHook func(zapcore.Entry) error
+
+//var z = zap.New(zapcore.NewCore(zapcore.NewConsoleEncoder(zap.NewDevelopmentEncoderConfig()), os.Stdout, zap.DebugLevel))
+var z, _ = zap.NewDevelopment()
 var logger = z.Sugar()
 
 var config = Config{
-	encoder:        encoder(),
 	maxAge:         time.Hour * 24 * 30,
 	rotationTime:   time.Hour * 24,
 	disableDefault: false,
 	logPath:        "logs",
+	formatType:     TEXT,
+	logLevel:       junet.Debug,
 	logSuffix:      ".%Y-%m-%d.log",
 }
 
@@ -33,16 +44,29 @@ type Config struct {
 	rotationTime time.Duration
 	maxAge       time.Duration
 	encoder      zapcore.Encoder
+	formatType   string
 
+	logLevel  string
 	logPath   string
 	logSuffix string
 
-	core []zapcore.Core
+	core  []zapcore.Core
+	hooks []func(entry zapcore.Entry) error
 }
 
+func SetLogLevel(l string) Opt {
+	return func(c *Config) {
+		c.logLevel = l
+	}
+}
 func SetLogSuffix(s string) Opt {
 	return func(c *Config) {
 		c.logSuffix = s
+	}
+}
+func AddHooks(hooks ...func(entry zapcore.Entry) error) Opt {
+	return func(c *Config) {
+		c.hooks = append(c.hooks, hooks...)
 	}
 }
 func AddCore(core ...zapcore.Core) Opt {
@@ -70,24 +94,38 @@ func SetDisableDefault(b bool) Opt {
 		c.disableDefault = b
 	}
 }
-func SetEncorder(en zapcore.Encoder) Opt {
+func SetFormatType(t string) Opt {
+	return func(c *Config) {
+		c.formatType = t
+	}
+}
+func SetEncoder(en zapcore.Encoder) Opt {
 	return func(c *Config) {
 		c.encoder = en
 	}
 }
-
-func encoder() zapcore.Encoder {
+func encoder(t string) zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = func(t time.Time, encoder zapcore.PrimitiveArrayEncoder) {
 		encoder.AppendString(t.Format("2006-01-02 15:04:05"))
 	}
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+
+	switch t {
+	case TEXT:
+		return zapcore.NewConsoleEncoder(encoderConfig)
+	case JSON:
+		return zapcore.NewJSONEncoder(encoderConfig)
+	}
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
 
 func Init(opts ...Opt) {
 	for _, opt := range opts {
 		opt(&config)
+	}
+	if config.encoder == nil {
+		config.encoder = encoder(config.formatType)
 	}
 	var core []zapcore.Core
 	if !config.disableDefault {
@@ -104,13 +142,19 @@ func getDefaultCore() ([]zapcore.Core, zapcore.Encoder) {
 	logsDir := filepath.Join(dir, config.logPath)
 	//日志级别
 	allPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool {
-		return lev >= zap.DebugLevel
+		if config.logLevel == junet.Debug {
+			return lev >= zap.DebugLevel
+		}
+		return lev > zap.DebugLevel
 	})
 	highPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //error级别
 		return lev >= zap.WarnLevel
 	})
 	lowPriority := zap.LevelEnablerFunc(func(lev zapcore.Level) bool { //info和debug级别,debug级别是最低的
-		return lev < zap.WarnLevel && lev >= zap.DebugLevel
+		if config.logLevel == junet.Debug {
+			return lev < zap.WarnLevel && lev >= zap.DebugLevel
+		}
+		return lev == zap.InfoLevel
 	})
 
 	allLogSync := zapcore.AddSync(getWriter(filepath.Join(logsDir, "all"+config.logSuffix), "all"))
@@ -118,24 +162,27 @@ func getDefaultCore() ([]zapcore.Core, zapcore.Encoder) {
 	infoLogSync := zapcore.AddSync(getWriter(filepath.Join(logsDir, "info"+config.logSuffix), "info"))
 
 	var cores []zapcore.Core
-
-	cores = append(cores,
-		zapcore.NewCore(
-			config.encoder,
-			zapcore.NewMultiWriteSyncer(allLogSync, zapcore.AddSync(os.Stdout)),
-			allPriority,
-		),
-		zapcore.NewCore(
-			config.encoder,
-			zapcore.NewMultiWriteSyncer(errorLogSync),
-			highPriority,
-		),
-		zapcore.NewCore(
-			config.encoder,
-			zapcore.NewMultiWriteSyncer(infoLogSync),
-			lowPriority,
-		),
+	allCore := zapcore.NewCore(
+		config.encoder,
+		zapcore.NewMultiWriteSyncer(allLogSync, zapcore.AddSync(os.Stdout)),
+		allPriority,
 	)
+	errCore := zapcore.NewCore(
+		config.encoder,
+		zapcore.NewMultiWriteSyncer(errorLogSync),
+		highPriority,
+	)
+	infoCore := zapcore.NewCore(
+		config.encoder,
+		zapcore.NewMultiWriteSyncer(infoLogSync),
+		lowPriority,
+	)
+	cores = append(cores,
+		allCore,
+		errCore,
+		infoCore,
+	)
+	zapcore.RegisterHooks(allCore, config.hooks...)
 	return cores, config.encoder
 }
 
