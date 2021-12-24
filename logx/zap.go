@@ -33,7 +33,7 @@ var config = Config{
 	disableDefault: false,
 	logPath:        "logs",
 	formatType:     TEXT,
-	logLevel:       junet.Debug,
+	logLevel:       junet.Mode,
 	logSuffix:      ".%Y-%m-%d.log",
 }
 

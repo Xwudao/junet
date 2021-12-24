@@ -43,7 +43,7 @@ type App struct {
 func init() {
 }
 func NewApp(opts ...InfoOpt) *App {
-	info := &Info{Mode: junet.Debug}
+	info := &Info{Mode: junet.Mode}
 	for _, opt := range opts {
 		opt(info)
 	}

@@ -10,3 +10,5 @@ const (
 const (
 	SuccessRtn = "success"
 )
+
+var Mode = Debug
