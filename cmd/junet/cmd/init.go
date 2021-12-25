@@ -41,6 +41,7 @@ func (p *initProject) Cmd() *cobra.Command {
 			p.init(args)
 			p.cloneProject()
 			p.rewriteMod()
+			p.rmGit()
 
 			utils.Info("finished, happy hacking!")
 		},
@@ -104,6 +105,10 @@ func (p *initProject) rewriteMod() {
 	utils.CheckErrWithStatus(err)
 	utils.Info("changed mod name")
 }
+func (p initProject) rmGit() {
+	gitDir := filepath.Join(p.rootPath, ".git")
+	_ = os.RemoveAll(gitDir)
+}
 func (p *initProject) parse(filename string) (*ast.File, *token.FileSet, error) {
 
 	fileSet := token.NewFileSet()
@@ -114,6 +119,7 @@ func (p *initProject) parse(filename string) (*ast.File, *token.FileSet, error) 
 	}
 
 	fset := fileSet
+	//astutil.RewriteImport(fset, astFile, p.originModName, p.newModName)
 
 	for _, importSpec := range astFile.Imports {
 		originPath := importSpec.Path.Value
