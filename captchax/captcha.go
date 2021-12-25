@@ -48,7 +48,7 @@ func Generate(height, width, length int) (string, string, error) {
 }
 
 func DefaultGenerate() (string, string, error) {
-	return Generate(65, 300, 4)
+	return Generate(32, 100, 4)
 }
 
 func Verify(id, answer string, clear bool) bool {
