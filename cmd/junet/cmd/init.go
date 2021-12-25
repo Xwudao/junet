@@ -16,6 +16,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"gopkg.in/errgo.v2/fmt/errors"
+
+	"github.com/Xwudao/junet/cmd/junet/utils"
 )
 
 const (
@@ -31,7 +33,7 @@ type initProject struct {
 	newModName    string
 }
 
-func (p *initProject) cmd() *cobra.Command {
+func (p *initProject) Cmd() *cobra.Command {
 	var c = &cobra.Command{
 		Use:   "init",
 		Short: "init junet project",
@@ -40,7 +42,7 @@ func (p *initProject) cmd() *cobra.Command {
 			p.cloneProject()
 			p.rewriteMod()
 
-			Info("finished, happy hacking!")
+			utils.Info("finished, happy hacking!")
 		},
 	}
 
@@ -51,7 +53,7 @@ func (p *initProject) cmd() *cobra.Command {
 func (p *initProject) init(args []string) {
 	//Info(strings.Join(args, ","))
 	if len(args) == 0 {
-		CheckErrWithStatus(errors.Newf("please input project name"))
+		utils.CheckErrWithStatus(errors.Newf("please input project name"))
 		return
 	}
 	p.projectName = args[0]
@@ -62,17 +64,17 @@ func (p *initProject) init(args []string) {
 
 	_, err := os.Stat(p.rootPath)
 	if err == nil {
-		CheckErrWithStatus(errors.Newf("maybe %s path existed, please rename or remove it.", p.rootPath))
+		utils.CheckErrWithStatus(errors.Newf("maybe %s path existed, please rename or remove it.", p.rootPath))
 	}
 }
 func (p *initProject) cloneProject() {
-	Info("cloning project....")
-	Info(p.projectName)
-	Info(gitUrl)
+	utils.Info("cloning project....")
+	utils.Info(p.projectName)
+	utils.Info(gitUrl)
 	cmd := exec.Command("git", "clone", gitUrl, p.projectName)
 	err := cmd.Run()
-	CheckErrWithStatus(err)
-	Info("cloned project....")
+	utils.CheckErrWithStatus(err)
+	utils.Info("cloned project....")
 }
 func (p *initProject) rewriteMod() {
 	if p.newModName == "" {
@@ -80,27 +82,27 @@ func (p *initProject) rewriteMod() {
 	}
 	var err error
 	p.originModName, err = p.getOriginName()
-	CheckErrWithStatus(err)
+	utils.CheckErrWithStatus(err)
 	cwd, _ := os.Getwd()
-	files := LoadFiles(cwd, func(filename string) bool {
+	files := utils.LoadFiles(cwd, func(filename string) bool {
 		return path.Ext(filename) == ".go" && !strings.Contains(filename, "/vendor/")
 	})
-	Info("changing mod name...")
+	utils.Info("changing mod name...")
 	for _, f := range files {
 		node, fset, err := p.parse(f)
 		if err != nil {
-			Error(err)
+			utils.Error(err)
 			continue
 		}
 		err = p.write(f, node, fset)
 		if err != nil {
-			Error(err)
+			utils.Error(err)
 			continue
 		}
 	}
 	err = p.setModName()
-	CheckErrWithStatus(err)
-	Info("changed mod name")
+	utils.CheckErrWithStatus(err)
+	utils.Info("changed mod name")
 }
 func (p *initProject) parse(filename string) (*ast.File, *token.FileSet, error) {
 
@@ -177,5 +179,5 @@ func (p *initProject) setModName() (err error) {
 	return nil
 }
 func init() {
-	rootCmd.AddCommand((&initProject{}).cmd())
+	RootCmd.AddCommand((&initProject{}).Cmd())
 }

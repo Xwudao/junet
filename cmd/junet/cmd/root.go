@@ -7,7 +7,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "",
 	Short: "junet help cli tool",
 	Run: func(cmd *cobra.Command, args []string) {
@@ -16,5 +16,5 @@ var rootCmd = &cobra.Command{
 }
 
 func Execute() error {
-	return rootCmd.Execute()
+	return RootCmd.Execute()
 }

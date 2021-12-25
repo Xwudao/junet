@@ -1,4 +1,4 @@
-package cmd
+package utils
 
 import (
 	"io/ioutil"
@@ -31,9 +31,30 @@ func LoadFiles(dir string, filter func(filename string) bool) (filenames []strin
 	return
 }
 
+func InStrArr(arr []string, aim string) bool {
+	for i := 0; i < len(arr); i++ {
+		if arr[i] == aim {
+			return true
+		}
+	}
+	return false
+}
+func CheckExist(p string) bool {
+	_, err := os.Stat(p)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func CurrentDir() string {
+	dir, _ := os.Getwd()
+	return dir
+}
+
 func Error(err error) {
 	if err != nil {
-		log.SetPrefix("ERROR")
+		log.SetPrefix("[ERROR]")
 		log.Println(err.Error())
 	}
 }
