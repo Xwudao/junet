@@ -177,12 +177,12 @@ func getDefaultCore() ([]zapcore.Core, zapcore.Encoder) {
 		zapcore.NewMultiWriteSyncer(infoLogSync),
 		lowPriority,
 	)
+	allCore = zapcore.RegisterHooks(allCore, config.hooks...)
 	cores = append(cores,
 		allCore,
 		errCore,
 		infoCore,
 	)
-	zapcore.RegisterHooks(allCore, config.hooks...)
 	return cores, config.encoder
 }
 
