@@ -9,10 +9,8 @@ And, out of box to use.
 ### install cli
 
 ```bash
-## for go1.16+
+## for go1.16+, we use embed feature
 go install github.com/Xwudao/junet/cmd/junet@latest
-## for go1.15-
-go get -u github.com/Xwudao/junet/cmd/junet
 ```
 
 ### init project
