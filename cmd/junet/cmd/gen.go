@@ -17,6 +17,7 @@ var GenCmd = &cobra.Command{
 
 func init() {
 	GenCmd.AddCommand((&gen.Route{}).Cmd())
+	GenCmd.AddCommand((&gen.DB{}).Cmd())
 
 	RootCmd.AddCommand(GenCmd)
 }

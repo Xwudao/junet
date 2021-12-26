@@ -3,6 +3,8 @@ package utils
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
+	"strings"
 
 	"gopkg.in/errgo.v2/fmt/errors"
 )
@@ -22,4 +24,10 @@ func SaveToFile(p string, cnt []byte, cover bool) (err error) {
 		return
 	}
 	return nil
+}
+func RemoveExt(filename string) string {
+	base := filepath.Base(filename)
+	ext := filepath.Ext(filename)
+
+	return strings.Replace(base, ext, "", 1)
 }
