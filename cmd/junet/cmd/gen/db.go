@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
+	"gopkg.in/errgo.v2/fmt/errors"
 
 	"github.com/Xwudao/junet/cmd/junet/utils"
 	"github.com/Xwudao/junet/internal/parser"
@@ -47,6 +48,11 @@ func (r *DB) init() {
 	r.RootPath = utils.CurrentDir()
 	r.CurrentFileName = os.Getenv("GOFILE")
 	r.PackageName = os.Getenv("GOPACKAGE")
+
+	if r.PackageName == "" || r.CurrentFileName == "" {
+		utils.CheckErrWithStatus(errors.Newf("please run with //go:generate"))
+		return
+	}
 }
 
 func (r *DB) generate() {
