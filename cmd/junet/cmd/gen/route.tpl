@@ -11,7 +11,7 @@ type {{.RouteName}}{{.RouteNameSuffix}} struct {
 }
 
 func (r *{{.RouteName}}{{.RouteNameSuffix}}) SetUpRoutes() {
-	{{.PackageName}} := r.Engine.Group("/{{.ToSnake .RouteName}}")
+	{{.PackageName}} := r.Engine.Group("/{{.PackageName}}/{{.ToSnake .RouteName}}")
 	{
 		{{.PackageName}}.GET("", r.index())
 	}

@@ -23,6 +23,9 @@ import (
 //go:embed route.tpl
 var tplCnt string
 
+//go:embed service.tpl
+var serviceTplCnt string
+
 type Route struct {
 	PackageName string
 
@@ -31,6 +34,9 @@ type Route struct {
 	RouteName string
 
 	FilePath string
+
+	WithService     bool
+	ServiceFilePath string
 
 	FilenameSuffix  string
 	RouteNameSuffix string
@@ -44,9 +50,11 @@ func (r *Route) Cmd() *cobra.Command {
 			r.init()
 			r.generate()
 			r.updateRoot()
+			r.generateService()
 		},
 	}
 	c.Flags().StringVarP(&r.RouteName, "name", "n", "", "the route of name")
+	c.Flags().BoolVarP(&r.WithService, "service", "s", false, "generate service file")
 	_ = c.MarkFlagRequired("name")
 	return c
 }
@@ -117,7 +125,6 @@ func (r *Route) updateRoot() {
 			utils.Error(errors.Newf("can't add import sec for root.go file"))
 		}
 
-		ast.Print(fset, f)
 	}
 
 	buf := &bytes.Buffer{}
@@ -127,6 +134,26 @@ func (r *Route) updateRoot() {
 	utils.CheckErrWithStatus(err)
 
 	utils.Info("updated root.go")
+}
+
+func (r *Route) generateService() {
+	if r.WithService {
+		utils.Info("generate with service file")
+		servicePath := filepath.Join(r.FilePath, "../../../services")
+		err := os.MkdirAll(servicePath, os.ModePerm)
+		utils.CheckErrWithStatus(err)
+		serviceFilePath := filepath.Join(servicePath, strcase.ToLowerCamel(r.RouteName)+"_service.go")
+
+		parse, err := template.New("service").Parse(serviceTplCnt)
+		utils.CheckErrWithStatus(err)
+		var buf bytes.Buffer
+		err = parse.Execute(&buf, r)
+		utils.CheckErrWithStatus(err)
+
+		err = utils.SaveToFile(serviceFilePath, buf.Bytes(), false)
+		utils.CheckErrWithStatus(err)
+		utils.Info("generate service file in: " + serviceFilePath)
+	}
 }
 
 func (r *Route) genUse1() *ast.ExprStmt {
