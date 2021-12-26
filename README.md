@@ -4,18 +4,16 @@ An `composition` framework. It contains `gin`, `zap`, `jwt-go`, `viper`
 
 And, out of box to use.
 
-
-
 ## Get Started
 
 ### install cli
 
 ```bash
-//for go1.16+
-go install github.com/Xwudao/cmd/junet@latest
+## for go1.16+
+go install github.com/Xwudao/junet/cmd/junet@latest
+## for go1.15-
+go get -u github.com/Xwudao/junet/cmd/junet
 ```
-
-
 
 ### init project
 
@@ -25,8 +23,6 @@ junet init demo -m github.com/Xwudao/my-new-demo
 
 - project name: demo
 - go module name: github.com/Xwudao/my-new-demo
-
-
 
 ## more
 
