@@ -62,13 +62,14 @@ func NewApp(opts ...InfoOpt) *App {
 	return app
 }
 
-func (a App) AddCommand(cmd ...*cobra.Command) {
+func (a *App) AddCommand(cmd ...*cobra.Command) {
 	a.rootCmd.AddCommand(cmd...)
 }
-func (a *App) Mount(f func(app *App)) {
+func (a *App) Mount(f func(app *App)) *App {
 	f(a)
+	return a
 }
-func (a App) Start(port int) error {
+func (a *App) Start(port int) error {
 	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
 		go func() {
 			err := a.Run(fmt.Sprintf(":%d", port))
