@@ -65,6 +65,9 @@ func NewApp(opts ...InfoOpt) *App {
 func (a App) AddCommand(cmd ...*cobra.Command) {
 	a.rootCmd.AddCommand(cmd...)
 }
+func (a *App) Mount(f func(app *App)) {
+	f(a)
+}
 func (a App) Start(port int) error {
 	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
 		go func() {
