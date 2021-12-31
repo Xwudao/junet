@@ -119,7 +119,9 @@ func encoder(t string) zapcore.Encoder {
 	}
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }
-
+func GetLogger() *zap.SugaredLogger {
+	return logger
+}
 func Init(opts ...Opt) {
 	for _, opt := range opts {
 		opt(&config)
