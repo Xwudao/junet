@@ -85,8 +85,7 @@ func (p *initProject) rewriteMod() {
 	var err error
 	p.originModName, err = p.getOriginName()
 	utils.CheckErrWithStatus(err)
-	cwd, _ := os.Getwd()
-	files := utils.LoadFiles(cwd, func(filename string) bool {
+	files := utils.LoadFiles(p.rootPath, func(filename string) bool {
 		return path.Ext(filename) == ".go" && !strings.Contains(filename, "/vendor/")
 	})
 	utils.Info("changing mod name...")
