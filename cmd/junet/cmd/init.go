@@ -42,6 +42,7 @@ func (p *initProject) Cmd() *cobra.Command {
 			p.cloneProject()
 			p.rewriteMod()
 			p.rmGit()
+			p.modTidy()
 
 			utils.Info("finished, happy hacking!")
 		},
@@ -183,6 +184,11 @@ func (p *initProject) setModName() (err error) {
 		return
 	}
 	return nil
+}
+
+func (p *initProject) modTidy() {
+	cmd := exec.Command("go", "mod", "tidy")
+	_ = cmd.Run()
 }
 func init() {
 	RootCmd.AddCommand((&initProject{}).Cmd())
