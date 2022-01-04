@@ -38,6 +38,8 @@ type Message struct {
 }
 
 type Config struct {
+	//system
+	initial bool
 	//client
 	client  *mail.SMTPClient
 	ctx     context.Context
@@ -156,6 +158,7 @@ func Init(opts ...Opt) {
 	config.ctx, config.cancel = context.WithCancel(context.Background())
 
 	go task()
+	config.initial = true
 	shutdown.Add(&config)
 }
 
@@ -198,5 +201,9 @@ func task() {
 }
 
 func SendEmail(m *Message) {
+	if !config.initial {
+		panic("mail service not initial")
+		return
+	}
 	config.msgChan <- m
 }
