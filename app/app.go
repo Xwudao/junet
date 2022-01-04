@@ -2,6 +2,7 @@ package app
 
 import (
 	"fmt"
+	"net"
 
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
@@ -68,6 +69,62 @@ func (a *App) AddCommand(cmd ...*cobra.Command) {
 func (a *App) Mount(f func(app *App)) *App {
 	f(a)
 	return a
+}
+func (a *App) StartFd(fd int) error {
+	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
+		go func() {
+			err := a.RunFd(fd)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		shutdown.Wait()
+	}
+
+	return a.rootCmd.Execute()
+}
+func (a *App) StartUnix(file string) error {
+	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
+		go func() {
+			err := a.RunUnix(file)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		shutdown.Wait()
+	}
+
+	return a.rootCmd.Execute()
+}
+func (a *App) StartListener(lis net.Listener) error {
+	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
+		go func() {
+			err := a.RunListener(lis)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		shutdown.Wait()
+	}
+
+	return a.rootCmd.Execute()
+}
+func (a *App) StartTLS(addr, certFile, keyFile string) error {
+	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
+		go func() {
+			err := a.RunTLS(addr, certFile, keyFile)
+			if err != nil {
+				panic(err)
+			}
+		}()
+
+		shutdown.Wait()
+	}
+
+	return a.rootCmd.Execute()
 }
 func (a *App) Start(port int) error {
 	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
