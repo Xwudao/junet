@@ -104,6 +104,11 @@ func SetPort(port int) Opt {
 		c.port = port
 	}
 }
+func SetUsername(user string) Opt {
+	return func(c *Config) {
+		c.username = user
+	}
+}
 func SetPassword(pass string) Opt {
 	return func(c *Config) {
 		c.password = pass
