@@ -43,7 +43,7 @@ func SetOrigin(s []string) CorsOpt {
 		config.AllowOrigins = s
 	}
 }
-func (a App) Cors(opts ...CorsOpt) {
+func (a *App) Cors(opts ...CorsOpt) {
 	config := cors.DefaultConfig()
 	for _, opt := range opts {
 		opt(&config)
