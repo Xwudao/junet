@@ -1,6 +1,6 @@
 module github.com/Xwudao/junet
 
-go 1.17
+go 1.18
 
 require (
 	github.com/gin-contrib/cors v1.3.1

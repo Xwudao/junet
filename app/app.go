@@ -1,14 +1,10 @@
 package app
 
 import (
-	"fmt"
-	"net"
-
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/cobra"
 
 	"github.com/Xwudao/junet"
-	"github.com/Xwudao/junet/shutdown"
 )
 
 type H gin.H
@@ -49,14 +45,12 @@ func NewApp(opts ...InfoOpt) *App {
 	for _, opt := range opts {
 		opt(info)
 	}
-	gin.SetMode(info.Mode)
 	cmd := &cobra.Command{
 		Use:   info.Use,
 		Short: info.Short,
 		Long:  info.Long,
 	}
 	app := &App{
-		Engine:  NewEngine(),
 		rootCmd: cmd,
 		info:    info,
 	}
@@ -66,77 +60,18 @@ func NewApp(opts ...InfoOpt) *App {
 func (a *App) AddCommand(cmd ...*cobra.Command) {
 	a.rootCmd.AddCommand(cmd...)
 }
+
 func (a *App) Mount(f func(app *App)) *App {
+	gin.SetMode(a.info.Mode)
+	a.Engine = NewEngine()
 	f(a)
 	return a
 }
-func (a *App) StartFd(fd int) error {
-	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
-		go func() {
-			err := a.RunFd(fd)
-			if err != nil {
-				panic(err)
-			}
-		}()
 
-		shutdown.Wait()
+func (a *App) Execute(run func(cmd *cobra.Command, args []string)) {
+	a.rootCmd.Run = run
+	err := a.rootCmd.Execute()
+	if err != nil {
+		panic(err)
 	}
-
-	return a.rootCmd.Execute()
-}
-func (a *App) StartUnix(file string) error {
-	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
-		go func() {
-			err := a.RunUnix(file)
-			if err != nil {
-				panic(err)
-			}
-		}()
-
-		shutdown.Wait()
-	}
-
-	return a.rootCmd.Execute()
-}
-func (a *App) StartListener(lis net.Listener) error {
-	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
-		go func() {
-			err := a.RunListener(lis)
-			if err != nil {
-				panic(err)
-			}
-		}()
-
-		shutdown.Wait()
-	}
-
-	return a.rootCmd.Execute()
-}
-func (a *App) StartTLS(addr, certFile, keyFile string) error {
-	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
-		go func() {
-			err := a.RunTLS(addr, certFile, keyFile)
-			if err != nil {
-				panic(err)
-			}
-		}()
-
-		shutdown.Wait()
-	}
-
-	return a.rootCmd.Execute()
-}
-func (a *App) Start(port int) error {
-	a.rootCmd.Run = func(cmd *cobra.Command, args []string) {
-		go func() {
-			err := a.Run(fmt.Sprintf(":%d", port))
-			if err != nil {
-				panic(err)
-			}
-		}()
-
-		shutdown.Wait()
-	}
-
-	return a.rootCmd.Execute()
 }
