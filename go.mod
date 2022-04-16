@@ -11,6 +11,7 @@ require (
 	github.com/iproj/file-rotatelogs v0.0.0-20210824162443-867baa3d2d63
 	github.com/jinzhu/gorm v1.9.16
 	github.com/jirfag/go-queryset v0.0.0-20191112125430-36aee76bfd77
+	github.com/juju/ratelimit v1.0.1
 	github.com/mojocn/base64Captcha v1.3.5
 	github.com/pkg/errors v0.8.1
 	github.com/robfig/cron/v3 v3.0.1
@@ -48,7 +49,6 @@ require (
 	github.com/jinzhu/now v1.1.3 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/juju/ratelimit v1.0.1 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/lestrrat-go/strftime v1.0.5 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
