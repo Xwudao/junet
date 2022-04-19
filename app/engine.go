@@ -8,7 +8,8 @@ type Engine struct {
 	*gin.Engine
 }
 
-func NewEngine() *Engine {
+func NewEngine(mode string) *Engine {
+	gin.SetMode(mode)
 	e := &Engine{Engine: gin.Default()}
 	return e
 }
