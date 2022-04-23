@@ -1,7 +1,9 @@
 package confx
 
 import (
+	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"log"
 )
 
 var config = Config{
@@ -65,6 +67,9 @@ func Init(opts ...Opt) {
 	}
 
 	viper.WatchConfig()
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		log.Println("config file changed:", in.Name)
+	})
 }
 
 func SaveConfigAs(file string) error {
