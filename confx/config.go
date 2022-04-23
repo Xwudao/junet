@@ -63,8 +63,13 @@ func Init(opts ...Opt) {
 			panic("init config failed: err")
 		}
 	}
+
+	viper.WatchConfig()
 }
 
+func SaveConfigAs(file string) error {
+	return viper.WriteConfigAs(file)
+}
 func SaveConfig() error {
 	return viper.WriteConfig()
 }
