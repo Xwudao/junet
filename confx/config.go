@@ -15,6 +15,14 @@ type Config struct {
 	name string
 	ext  string
 	path []string
+
+	run func(*viper.Viper)
+}
+
+func SetDefaultValue(run func(*viper.Viper)) Opt {
+	return func(c *Config) {
+		c.run = run
+	}
 }
 
 func SetPath(p []string) Opt {
@@ -44,6 +52,10 @@ func Init(opts ...Opt) {
 		viper.AddConfigPath(p)
 	}
 
+	if config.run != nil {
+		config.run(viper.GetViper())
+	}
+
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			panic("config file not found")
@@ -51,6 +63,10 @@ func Init(opts ...Opt) {
 			panic("init config failed: err")
 		}
 	}
+}
+
+func SaveConfig() error {
+	return viper.WriteConfig()
 }
 
 //func init() {
