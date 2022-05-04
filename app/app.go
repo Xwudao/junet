@@ -61,18 +61,19 @@ func (a *App) AddCommand(cmd ...*cobra.Command) {
 	a.rootCmd.AddCommand(cmd...)
 }
 
-func (a *App) Mdw(f func(app *App)) *App {
+func (a *App) checkInit() {
 	if a.Engine == nil {
 		a.Engine = NewEngine(a.info.Mode)
 	}
+}
+func (a *App) Mdw(f func(app *App)) *App {
+	a.checkInit()
 	f(a)
 	return a
 }
 func (a *App) Mount(f func(app *App)) *App {
 	gin.SetMode(a.info.Mode)
-	if a.Engine == nil {
-		a.Engine = NewEngine(a.info.Mode)
-	}
+	a.checkInit()
 	f(a)
 	return a
 }
