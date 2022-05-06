@@ -3,7 +3,10 @@ package confx
 import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 )
 
 var config = Config{
@@ -44,6 +47,7 @@ func SetFileName(n string) Opt {
 }
 
 func Init(opts ...Opt) {
+	copyFile()
 	for _, opt := range opts {
 		opt(&config)
 	}
@@ -77,6 +81,35 @@ func SaveConfigAs(file string) error {
 }
 func SaveConfig() error {
 	return viper.WriteConfig()
+}
+func copyFile() {
+	dir, err := os.Getwd()
+	if err != nil {
+		dir = "."
+	}
+	dir = filepath.Join(dir, "config.default.yml")
+	if info, err := os.Stat(dir); err == nil {
+		if !info.IsDir() {
+			// copy config.default.yml to config.yml
+			origin, err := ioutil.ReadFile(dir)
+			if err != nil {
+				log.Println("read config.default.yml failed:", err)
+				return
+			}
+			err = ioutil.WriteFile("config.yml", origin, 0644)
+			if err != nil {
+				log.Println("write config.yml failed:", err)
+				return
+			}
+		}
+	}
+	// create empty config.yml file
+	if _, err := os.Stat("config.yml"); os.IsNotExist(err) {
+		err = ioutil.WriteFile("config.yml", []byte(""), 0644)
+		if err != nil {
+			log.Println("create config.yml failed:", err)
+		}
+	}
 }
 
 //func init() {
