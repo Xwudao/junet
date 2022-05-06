@@ -17,9 +17,10 @@ var config = Config{
 
 type Opt func(*Config)
 type Config struct {
-	name string
-	ext  string
-	path []string
+	name       string
+	ext        string
+	path       []string
+	autoCreate bool
 
 	run func(*viper.Viper)
 }
@@ -27,6 +28,12 @@ type Config struct {
 func SetDefaultValue(run func(*viper.Viper)) Opt {
 	return func(c *Config) {
 		c.run = run
+	}
+}
+
+func SetAutoCreate(autoCreate bool) Opt {
+	return func(c *Config) {
+		c.autoCreate = autoCreate
 	}
 }
 
@@ -47,9 +54,11 @@ func SetFileName(n string) Opt {
 }
 
 func Init(opts ...Opt) {
-	copyFile()
 	for _, opt := range opts {
 		opt(&config)
+	}
+	if config.autoCreate {
+		copyFile(getFullConfigName(config.name, config.ext))
 	}
 
 	viper.SetConfigName(config.name)
@@ -82,11 +91,25 @@ func SaveConfigAs(file string) error {
 func SaveConfig() error {
 	return viper.WriteConfig()
 }
-func copyFile() {
+
+func getFullConfigName(name string, ext string) string {
+	switch ext {
+	case "yaml", "yml":
+		return name + ".yml"
+	case "json":
+		return name + ".json"
+	case "toml":
+		return name + ".toml"
+	default:
+		return name + "." + ext
+	}
+}
+func copyFile(configName string) {
 	dir, err := os.Getwd()
 	if err != nil {
 		dir = "."
 	}
+	// if config.default.yml file existed, copy it to config.yml
 	dir = filepath.Join(dir, "config.default.yml")
 	if info, err := os.Stat(dir); err == nil {
 		if !info.IsDir() {
@@ -96,16 +119,16 @@ func copyFile() {
 				log.Println("read config.default.yml failed:", err)
 				return
 			}
-			err = ioutil.WriteFile("config.yml", origin, 0644)
+			err = ioutil.WriteFile(configName, origin, 0644)
 			if err != nil {
 				log.Println("write config.yml failed:", err)
 				return
 			}
 		}
 	}
-	// create empty config.yml file
-	if _, err := os.Stat("config.yml"); os.IsNotExist(err) {
-		err = ioutil.WriteFile("config.yml", []byte(""), 0644)
+	// or, create empty config.yml file
+	if _, err := os.Stat(configName); os.IsNotExist(err) {
+		err = ioutil.WriteFile(configName, []byte(""), 0644)
 		if err != nil {
 			log.Println("create config.yml failed:", err)
 		}
